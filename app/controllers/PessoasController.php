@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\View;
+
 class PessoasController extends BaseController {
 
     public function visualizarFormulario() {

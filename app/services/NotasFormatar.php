@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-Class NotasFormatar {
+class NotasFormatar {
     public function formataNotasPeriodos($notas, $criterio_avaliativo)
     {
         if (!empty($notas) && !empty($criterio_avaliativo)) {
@@ -17,69 +17,37 @@ Class NotasFormatar {
     public function calculaNotaFinal($notas, $disciplinas, $criterio_avaliativo)
     {
         if (!empty($notas) && !empty($disciplinas) && !empty($criterio_avaliativo)) {
-            $array_notas = [];
+            $soma_notas = 0;
+            $contador_notas = 0;
 
             foreach ($disciplinas as $disciplina) {
                 foreach ($notas as $nota) {
                     if ($nota->disciplina_id == $disciplina->disciplina_id) {
-                        $array_notas[] = [
-                            'valor_nota' => $nota->valor_nota,
-                            'disciplina_id' => $nota->disciplina_id
-                        ];
+                        $soma_notas += $nota->valor_nota;
+                        $contador_notas++;
                     }
                 }
             }
 
-            return $this->{"calculo$criterio_avaliativo->calculo_id"}($array_notas, $criterio_avaliativo->arredondamento_id);
+            if ($contador_notas > 0) {
+                // Aplicando o peso nos bimestres
+                $nota_final = ($soma_notas + ($soma_notas * 2) + ($soma_notas * 2)) / 6;
+                return $this->arredondamentoNotaFinal($nota_final);
+            } else {
+                return null;
+            }
         }
     }
 
-    function calculo1($array_notas, $arredondamento_id) {
-        $array_notas_finais = [];
-    
-        foreach ($array_notas as $nota) {
-            $disciplina_id = $nota['disciplina_id'];
-    
-            if (!isset($array_notas_finais[$disciplina_id])) {
-                $array_notas_finais[$disciplina_id] = [
-                    'disciplina_id' => $disciplina_id,
-                    'soma' => 0,
-                    'contagem' => 0
-                ];
-            }
-    
-            $array_notas_finais[$disciplina_id]['soma'] += $nota['valor_nota'];
-            $array_notas_finais[$disciplina_id]['contagem']++;
+    protected function arredondamentoNotaFinal($nota_final)
+    {
+        // Arredondamento conforme o novo requisito
+        $fracao_decimal = $nota_final - floor($nota_final);
+        if ($fracao_decimal >= 0.7) {
+            return ceil($nota_final);
+        } else {
+            return floor($nota_final);
         }
-    
-        foreach ($array_notas_finais as &$nota_final) {
-            $nota_final['valor_nota'] = $this->arredondaNota($nota_final['soma'] / $nota_final['contagem'], $arredondamento_id);
-        }
-    
-        return $array_notas_finais;
-    }
-
-    function calculo2($array_notas, $arredondamento_id) {
-        $array_notas_finais = [];
-    
-        foreach ($array_notas as $nota) {
-            $disciplina_id = $nota['disciplina_id'];
-    
-            if (!isset($array_notas_finais[$disciplina_id])) {
-                $array_notas_finais[$disciplina_id] = [
-                    'disciplina_id' => $disciplina_id,
-                    'soma' => 0
-                ];
-            }
-    
-            $array_notas_finais[$disciplina_id]['soma'] += $nota['valor_nota'];
-        }
-    
-        foreach ($array_notas_finais as &$nota_final) {
-            $nota_final['valor_nota'] = $this->arredondaNota($nota_final['soma'], $arredondamento_id);
-        }
-    
-        return $array_notas_finais;
     }
 
     protected function arredondaNota($nota, $arredondamento_id)
@@ -93,15 +61,11 @@ Class NotasFormatar {
 
     protected function arredondamento1($valor_nota)
     {
-        $valor_nota_arredondada = ceil($valor_nota);
-        
-        return $valor_nota_arredondada;
+        return ceil($valor_nota);
     }
 
     protected function arredondamento2($valor_nota)
     {
-        $valor_nota_arredondada = floor($valor_nota);
-        
-        return $valor_nota_arredondada;
+        return floor($valor_nota);
     }
 }

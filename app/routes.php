@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Facades\Route; // Use o namespace correto para as rotas do Laravel
+
 /*
 |--------------------------------------------------------------------------
 | Application Routes
@@ -19,3 +21,4 @@ Route::get('/', function()
 Route::get('/boletim', 'BoletimController@visualizarBoletim');
 Route::get('cadastro', 'PessoasController@visualizarFormulario');
 Route::post('/cadastrar-pessoa', 'PessoasController@cadastrarPessoa');
+//Route::get('/teste', 'PessoasController@listarPessoas');
